@@ -20,6 +20,12 @@ class RolloutTest {
     }
 
     @Test
+    void canaryHandlesVeryLargeStepsWithoutOverflow() {
+        assertEquals(java.util.List.of(0, 100),
+                new CanaryRollout().trafficPercentages(0, Integer.MAX_VALUE));
+    }
+
+    @Test
     void blueGreenSwitchCanBeReversedForRollback() {
         var router = new BlueGreenRouter();
         assertEquals(BlueGreenRouter.Environment.GREEN, router.switchTraffic());
@@ -32,5 +38,18 @@ class RolloutTest {
         assertTrue(flags.enabledFor("new-checkout", "user-7"));
         assertFalse(flags.enabledFor("new-checkout", "user-8"));
         assertFalse(flags.enabledFor("unknown", "user-7"));
+    }
+
+    @Test
+    void featureFlagCopiesMutableInputs() {
+        var users = new java.util.HashSet<>(java.util.Set.of("user-7"));
+        var configuration = new java.util.HashMap<String, java.util.Set<String>>();
+        configuration.put("new-checkout", users);
+        var flags = new FeatureFlags(configuration);
+
+        users.clear();
+        configuration.clear();
+
+        assertTrue(flags.enabledFor("new-checkout", "user-7"));
     }
 }

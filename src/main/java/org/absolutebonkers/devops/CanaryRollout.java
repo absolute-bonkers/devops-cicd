@@ -8,8 +8,9 @@ public final class CanaryRollout implements RolloutStrategy {
     public List<Integer> trafficPercentages(int currentPercent, int stepPercent) {
         validate(currentPercent, stepPercent);
         List<Integer> steps = new ArrayList<>();
-        for (int traffic = currentPercent; traffic < 100; traffic = Math.min(100, traffic + stepPercent)) {
+        for (int traffic = currentPercent; traffic < 100;) {
             steps.add(traffic);
+            traffic += Math.min(stepPercent, 100 - traffic);
         }
         steps.add(100);
         return List.copyOf(steps);
